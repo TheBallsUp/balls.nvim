@@ -1,0 +1,145 @@
+	*balls.nvim*	An idiomatic neovim plugin manager.
+
+================================================================================
+INTRODUCTION                                                       *balls-intro*
+
+|balls.nvim| is a plugin manager focused on simplicity and leveraging builtin
+features. You are expected to understand how neovim's |packages| work and how
+to manage your |'packpath'|.
+
+You can register plugins using the |balls.register()| function.
+If you are having issues, enable debug logs by calling |balls.setup()| with
+`debug = true` and open an issue on GitHub.
+
+================================================================================
+API                                                                  *balls-api*
+
+balls.register({plugin})                                      *balls.register()*
+    This will make balls.nvim aware of a plugin you want installed.
+    You can install plugins using the |:BallsInstall| command or
+    |balls.install()| function.
+    You can update plugins using the |:BallsUpdate| command or
+    |balls.update()| function.
+    These two actions can be combined using the |:BallsSync| command or
+    |balls.sync()| function.
+    You can access registered plugins via a global variable called
+    `BALLS_PLUGINS`. It's a `table<string, BallsPlugin>` whose entries you can
+    pass to other API functions.
+
+    Parameters:
+      • {plugin} (table) BallsPluginSpec
+	• {url}     (string) Git URL
+	• {branch}  (string | nil)                   Git URL
+	• {tag}     (string | nil)                   Git tag
+	• {commit}  (string | nil)                   Git commit hash
+	• {name}    (string | nil)                   Custom name for the plugin
+	• {lazy}    (boolean | nil)                  If true, the plugin will not be loaded
+	                                             automatically. This is false by default.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+
+    Usage: >lua
+	require("balls").register({
+	  url = "https://github.com/catppuccin/nvim.git",
+	  name = "catppuccin",
+	})
+<
+balls.install({plugin})                                        *balls.install()*
+    This will check if the given plugin exists and if not, clone it using git.
+
+    Parameters:
+      • {plugin} (table) BallsPlugin
+	• {url}     (string)                         Git URL
+	• {branch}  (string | nil)                   Git URL
+	• {tag}     (string | nil)                   Git tag
+	• {commit}  (string | nil)                   Git commit hash
+	• {name}    (string)                         Custom name for the plugin
+	• {lazy}    (boolean)                        If true, the plugin will not be loaded
+	                                             automatically. This is false by default.
+	• {path}    (string)                         Path to where the plugin is on the
+	                                             filesystem.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+
+balls.update({plugin})                                          *balls.update()*
+    This will update an existing plugin.
+
+    Parameters:
+      • {plugin} (table) BallsPlugin
+	• {url}     (string)                         Git URL
+	• {branch}  (string | nil)                   Git URL
+	• {tag}     (string | nil)                   Git tag
+	• {commit}  (string | nil)                   Git commit hash
+	• {name}    (string)                         Custom name for the plugin
+	• {lazy}    (boolean)                        If true, the plugin will not be loaded
+	                                             automatically. This is false by default.
+	• {path}    (string)                         Path to where the plugin is on the
+	                                             filesystem.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+
+balls.sync({plugin})                                              *balls.sync()*
+    This will check if the given plugin exists and if not, clone it using git.
+    If the plugin exists, it will be updated.
+
+    Parameters:
+      • {plugin} (table) BallsPlugin
+	• {url}     (string)                         Git URL
+	• {branch}  (string | nil)                   Git URL
+	• {tag}     (string | nil)                   Git tag
+	• {commit}  (string | nil)                   Git commit hash
+	• {name}    (string)                         Custom name for the plugin
+	• {lazy}    (boolean)                        If true, the plugin will not be loaded
+	                                             automatically. This is false by default.
+	• {path}    (string)                         Path to where the plugin is on the
+	                                             filesystem.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+
+balls.setup({opts})                                              *balls.setup()*
+    This function is used to apply configuration to balls.nvim.
+    It is NOT required for balls.nvim to work.
+
+    Parameters:
+      • {opts} (table) BallsPluginSpec
+	• {debug} (boolean) Enable debug logs
+
+================================================================================
+COMMANDS                                                        *balls-commands*
+
+These commands are always available and used to trigger various |balls-api|
+actions.
+
+*:BallsInstall*   This will make sure all registered plugins are installed.
+
+*:BallsUpdate*    This will make sure all registered plugins are up to date.
+
+*:BallsSync*      This will make sure all registered plugins are installed and up
+                to date.
+
+*:BallsList*      This will open a floating window showing all registered plugins.
+
+================================================================================
+LAZY LOADING                                                *balls-lazy-loading*
+
+Lazy loading can be achieved by using |:packadd|. Any plugins you registered
+as `lazy = true` will be put into the `pack/balls/opt/`. You can setup
+|autocmd|s or any other trigger you'd like to conditionally load plugins.
+
+For example, to load the nvim-cmp plugin only when entering insert mode:
+>lua
+    require("balls").register({
+      url = "https://github.com/hrsh7th/nvim-cmp.git",
+      lazy = true,
+    })
+
+    vim.api.nvim_create_autocmd("InsertEnter", {
+      desc = "Loads nvim-cmp when entering insert mode",
+      callback = function()
+        vim.cmd.packadd("nvim-cmp")
+
+        require("cmp").setup({
+          -- your cmp setup here
+        })
+      end,
+    })
+<
+================================================================================
+
+# vim: textwidth=80 noexpandtab tabstop=8 filetype=help
