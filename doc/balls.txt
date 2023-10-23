@@ -33,9 +33,11 @@ balls.register({plugin})                                      *balls.register()*
 	• {tag}     (string | nil)                   Git tag
 	• {commit}  (string | nil)                   Git commit hash
 	• {name}    (string | nil)                   Custom name for the plugin
-	• {lazy}    (boolean | nil)                  If true, the plugin will not be loaded
-	                                             automatically. This is false by default.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+	• {lazy}    (boolean | nil)                  If true, the plugin will
+                                                     not be loaded automatically.
+                                                     This is false by default.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+                                                     installing the plugin
 
     Usage: >lua
 	require("balls").register({
@@ -53,11 +55,16 @@ balls.install({plugin})                                        *balls.install()*
 	• {tag}     (string | nil)                   Git tag
 	• {commit}  (string | nil)                   Git commit hash
 	• {name}    (string)                         Custom name for the plugin
-	• {lazy}    (boolean)                        If true, the plugin will not be loaded
-	                                             automatically. This is false by default.
-	• {path}    (string)                         Path to where the plugin is on the
-	                                             filesystem.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+	• {lazy}    (boolean | nil)                  If true, the plugin will
+                                                     not be loaded automatically.
+                                                     This is false by default.
+	• {path}    (string)                         Path to where the plugin is
+                                                     on the filesystem.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+                                                     installing the plugin
+
+balls.install_all()                                        *balls.install_all()*
+    This will install all regsitered plugins.
 
 balls.update({plugin})                                          *balls.update()*
     This will update an existing plugin.
@@ -69,11 +76,16 @@ balls.update({plugin})                                          *balls.update()*
 	• {tag}     (string | nil)                   Git tag
 	• {commit}  (string | nil)                   Git commit hash
 	• {name}    (string)                         Custom name for the plugin
-	• {lazy}    (boolean)                        If true, the plugin will not be loaded
-	                                             automatically. This is false by default.
-	• {path}    (string)                         Path to where the plugin is on the
-	                                             filesystem.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+	• {lazy}    (boolean | nil)                  If true, the plugin will
+                                                     not be loaded automatically.
+                                                     This is false by default.
+	• {path}    (string)                         Path to where the plugin is
+                                                     on the filesystem.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+                                                     installing the plugin
+
+balls.update_all()                                          *balls.update_all()*
+    This will install all regsitered plugins.
 
 balls.sync({plugin})                                              *balls.sync()*
     This will check if the given plugin exists and if not, clone it using git.
@@ -86,11 +98,17 @@ balls.sync({plugin})                                              *balls.sync()*
 	• {tag}     (string | nil)                   Git tag
 	• {commit}  (string | nil)                   Git commit hash
 	• {name}    (string)                         Custom name for the plugin
-	• {lazy}    (boolean)                        If true, the plugin will not be loaded
-	                                             automatically. This is false by default.
-	• {path}    (string)                         Path to where the plugin is on the
-	                                             filesystem.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after installing the plugin
+	• {lazy}    (boolean | nil)                  If true, the plugin will
+                                                     not be loaded automatically.
+                                                     This is false by default.
+	• {path}    (string)                         Path to where the plugin is
+                                                     on the filesystem.
+	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+                                                     installing the plugin
+
+balls.sync_all()                                              *balls.sync_all()*
+    This will install and updated all registered plugins, as well as remove any
+    unregistered ones.
 
 balls.setup({opts})                                              *balls.setup()*
     This function is used to apply configuration to balls.nvim.
@@ -99,6 +117,9 @@ balls.setup({opts})                                              *balls.setup()*
     Parameters:
       • {opts} (table) BallsPluginSpec
 	• {debug} (boolean) Enable debug logs
+
+balls.ui.display_list()                                *balls.ui.display_list()*
+    This will open a floating window displaying all registered plugins.
 
 ================================================================================
 COMMANDS                                                        *balls-commands*
@@ -142,4 +163,4 @@ For example, to load the nvim-cmp plugin only when entering insert mode:
 <
 ================================================================================
 
-# vim: textwidth=80 noexpandtab tabstop=8 filetype=help
+# vim: textwidth=80 colorcolumn=81 noexpandtab tabstop=8 filetype=help
