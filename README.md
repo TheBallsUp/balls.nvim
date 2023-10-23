@@ -26,15 +26,14 @@ local balls_path = vim.fn.stdpath("config") .. "/pack/alphakeks/start/balls.nvim
 if not vim.uv.fs_stat(balls_path) then
   local command = { "git", "clone", "https://github.com/AlphaKeks/balls.nvim", balls_path }
   local opts = { text = true }
-
   local result = vim.system(command, opts):wait()
 
   if result.code ~= 0 then
-    print("failed to install balls.nvim!")
+    vim.print("Failed to install balls.nvim! " .. vim.inspect(result))
     return
   end
 
-  print("installed balls.nvim!")
+  vim.print("Installed balls.nvim! Run `:BallsInstall` to install your plugins.")
   vim.cmd.packadd("balls.nvim")
   vim.cmd.helptags("ALL")
 end
