@@ -1,3 +1,10 @@
+--[[ Copyright (C) AlphaKeks <alphakeks@dawn.sh>                                                  ]]
+--[[                                                                                              ]]
+--[[ This is free software: you may redistribute it and / or modify it under the terms of the GNU ]]
+--[[ General Public License version 3.                                                            ]]
+--[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
+--[[ <https://www.gnu.org/licenses/>.                                                             ]]
+
 --- Opens a floating window displaying all registered plugins.
 local function display_list()
 	local buffer = vim.api.nvim_create_buf(false, true)
