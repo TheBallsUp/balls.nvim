@@ -28,39 +28,36 @@ balls.register({plugin})                                      *balls.register()*
 
     Parameters:
       • {plugin} (table) BallsPluginSpec
-	• {url}     (string) Git URL
-	• {branch}  (string | nil)                   Git URL
-	• {tag}     (string | nil)                   Git tag
-	• {commit}  (string | nil)                   Git commit hash
-	• {name}    (string | nil)                   Custom name for the plugin
-	• {lazy}    (boolean | nil)                  If true, the plugin will
-                                                     not be loaded automatically.
-                                                     This is false by default.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+        • {url}     (string) Git URL
+        • {branch}  (string | nil) Git branch
+        • {tag}     (string | nil) Git tag
+        • {commit}  (string | nil) Git commit hash
+        • {name}    (string | nil) Custom name for the plugin
+        • {lazy}    (boolean | nil) If true, the plugin will not be loaded
+                                    automatically. This is false by default.
+        • {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
                                                      installing the plugin
 
     Usage: >lua
-	require("balls").register({
-	  url = "https://github.com/catppuccin/nvim.git",
-	  name = "catppuccin",
-	})
+        require("balls").register({
+          url = "https://github.com/catppuccin/nvim.git",
+          name = "catppuccin",
+        })
 <
 balls.install({plugin})                                        *balls.install()*
     This will check if the given plugin exists and if not, clone it using git.
 
     Parameters:
       • {plugin} (table) BallsPlugin
-	• {url}     (string)                         Git URL
-	• {branch}  (string | nil)                   Git URL
-	• {tag}     (string | nil)                   Git tag
-	• {commit}  (string | nil)                   Git commit hash
-	• {name}    (string)                         Custom name for the plugin
-	• {lazy}    (boolean | nil)                  If true, the plugin will
-                                                     not be loaded automatically.
-                                                     This is false by default.
-	• {path}    (string)                         Path to where the plugin is
-                                                     on the filesystem.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+        • {url}     (string) Git URL
+        • {branch}  (string | nil) Git branch
+        • {tag}     (string | nil) Git tag
+        • {commit}  (string | nil) Git commit hash
+        • {name}    (string | nil) Custom name for the plugin
+        • {lazy}    (boolean | nil) If true, the plugin will not be loaded
+                                    automatically. This is false by default.
+        • {path}    (string) Path to where the plugin is on the filesystem.
+        • {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
                                                      installing the plugin
 
 balls.install_all()                                        *balls.install_all()*
@@ -71,17 +68,15 @@ balls.update({plugin})                                          *balls.update()*
 
     Parameters:
       • {plugin} (table) BallsPlugin
-	• {url}     (string)                         Git URL
-	• {branch}  (string | nil)                   Git URL
-	• {tag}     (string | nil)                   Git tag
-	• {commit}  (string | nil)                   Git commit hash
-	• {name}    (string)                         Custom name for the plugin
-	• {lazy}    (boolean | nil)                  If true, the plugin will
-                                                     not be loaded automatically.
-                                                     This is false by default.
-	• {path}    (string)                         Path to where the plugin is
-                                                     on the filesystem.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+        • {url}     (string) Git URL
+        • {branch}  (string | nil) Git branch
+        • {tag}     (string | nil) Git tag
+        • {commit}  (string | nil) Git commit hash
+        • {name}    (string | nil) Custom name for the plugin
+        • {lazy}    (boolean | nil) If true, the plugin will not be loaded
+                                    automatically. This is false by default.
+        • {path}    (string) Path to where the plugin is on the filesystem.
+        • {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
                                                      installing the plugin
 
 balls.update_all()                                          *balls.update_all()*
@@ -93,17 +88,15 @@ balls.sync({plugin})                                              *balls.sync()*
 
     Parameters:
       • {plugin} (table) BallsPlugin
-	• {url}     (string)                         Git URL
-	• {branch}  (string | nil)                   Git URL
-	• {tag}     (string | nil)                   Git tag
-	• {commit}  (string | nil)                   Git commit hash
-	• {name}    (string)                         Custom name for the plugin
-	• {lazy}    (boolean | nil)                  If true, the plugin will
-                                                     not be loaded automatically.
-                                                     This is false by default.
-	• {path}    (string)                         Path to where the plugin is
-                                                     on the filesystem.
-	• {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
+        • {url}     (string) Git URL
+        • {branch}  (string | nil) Git branch
+        • {tag}     (string | nil) Git tag
+        • {commit}  (string | nil) Git commit hash
+        • {name}    (string | nil) Custom name for the plugin
+        • {lazy}    (boolean | nil) If true, the plugin will not be loaded
+                                    automatically. This is false by default.
+        • {path}    (string) Path to where the plugin is on the filesystem.
+        • {on_sync} (fun(plugin: BallsPlugin) | nil) Callback to run after
                                                      installing the plugin
 
 balls.sync_all()                                              *balls.sync_all()*
@@ -116,7 +109,7 @@ balls.setup({opts})                                              *balls.setup()*
 
     Parameters:
       • {opts} (table) BallsPluginSpec
-	• {debug} (boolean) Enable debug logs
+        • {debug} (boolean) Enable debug logs
 
 balls.ui.display_list()                                *balls.ui.display_list()*
     This will open a floating window displaying all registered plugins.
