@@ -12,10 +12,15 @@
 ---@return BallsPlugin plugin
 local function register(spec)
 	local name_parts = vim.split(spec.url, "/")
+	local name = name_parts[#name_parts]
+
+	if vim.endswith(name, ".git") then
+		name = name:sub(1, #name - 4)
+	end
 
 	---@type BallsPlugin
 	local plugin = vim.tbl_deep_extend("force", {
-		name = name_parts[#name_parts],
+		name = name,
 		lazy = false,
 	}, spec)
 
