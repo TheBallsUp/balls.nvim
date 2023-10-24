@@ -5,31 +5,23 @@
 --[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
---- Returns the path to balls.nvim's |packpath|.
+--- Checks if the given `path` exists on the filesytem.
 ---
----@param opts { opt: boolean }
----
----@return string path
-local function packpath(opts)
-	local path = vim.fn.stdpath("config") .. "/pack/balls/"
-
-	if opts.opt then
-		return path .. "opt/"
-	else
-		return path .. "start/"
-	end
-end
-
---- Checks if the given path exists on the filesystem.
+---@private
 ---
 ---@param path string
 ---
----@return boolean
+---@return boolean exists
 local function exists(path)
-	return vim.uv.fs_stat(path)
+	if vim.version().minor == 10 then
+		return vim.uv.fs_stat(path)
+	else
+		require("balls.log").error("Invalid neovim version! You need at least version 0.9 for this plugin to work.")
+		return false
+	end
 end
 
 return {
-	packpath = packpath,
+	plugin_path = plugin_path,
 	exists = exists,
 }

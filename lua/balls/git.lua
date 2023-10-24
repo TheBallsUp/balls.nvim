@@ -5,72 +5,101 @@
 --[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
+local fs = require("balls.fs")
+local util = require("balls.util")
 local log = require("balls.log")
 
---- Runs a git command with the given `args` and executes the given `callback` when the command
---- is done.
+--- Checks out a specific git revision for the given `plugin`.
 ---
----@param args string[]
----@param callback? fun(result: vim.SystemCompleted)
----@param opts? { cwd?: string }
-local function git(args, callback, opts)
-	args = vim.list_extend({ "git" }, args)
-	opts = vim.F.if_nil(opts, {})
-
-	local result = vim.system(args, { text = true, cwd = opts.cwd }):wait()
+---@private
+---
+---@param plugin BallsPlugin
+---@param rev string?
+local function checkout(plugin, rev)
+	local command = { "git", "checkout", vim.F.if_nil(rev, plugin.rev) }
+	local opts = { cwd = plugin:path() }
+	local result = util.shell(command, opts):wait()
 
 	if result.code ~= 0 then
-		log.error("Failed to run git command: %s", vim.inspect(result))
+		return log.error(
+			"Failed to checkout commit `%s` for `%s`: %s",
+			vim.F.if_nil(rev, plugin.rev),
+			plugin.name,
+			vim.inspect(result)
+		)
+	end
+
+	log.debug("Checked out commit `%s` for `%s`.", plugin.rev, plugin.name)
+end
+
+--- Clones a plugin from its remote repository.
+---
+---@private
+---
+---@param plugin BallsPlugin
+local function clone(plugin)
+	local result = util.shell({ "git", "clone", plugin.url, plugin:path() }):wait()
+
+	if result.code ~= 0 then
+		return log.error("Failed to clone plugin `%s`: %s", plugin.name, vim.inspect(result))
+	end
+
+	log.debug("Cloned plugin `%s`.", plugin.name)
+
+	if plugin.rev ~= nil then
+		checkout(plugin)
+	end
+
+	if plugin.on_sync ~= nil then
+		plugin.on_sync(plugin)
+		log.info("Ran on_sync for %s.", plugin.name)
+	end
+end
+
+--- Pulls the latest version of the given `plugin` if it's not pinned to a specifc revision.
+---
+---@private
+---
+---@param plugin BallsPlugin
+local function pull(plugin)
+	if plugin.rev ~= nil then
 		return
 	end
 
-	log.debug("Executed `%s`", table.concat(args, " "))
+	local result = util.shell({ "git", "pull" }, { cwd = plugin:path() }):wait()
 
-	if callback ~= nil then
-		callback(result)
-		log.debug("Ran post clone callback")
+	if result.code ~= 0 then
+		return log.error("Failed to pull updates for plugin `%s`: %s", plugin.name, vim.inspect(result))
+	end
+
+	log.debug("Updated plugin `%s`.", plugin.name)
+
+	if plugin.on_sync ~= nil then
+		plugin.on_sync(plugin)
+		log.info("Ran on_sync for %s.", plugin.name)
 	end
 end
 
---- Clones a git repository from the given `url`.
----
----@param url string Git URL
----@param path string Destination path
----@param options? { branch?: string, tag?: string, commit?: string }
-local function clone(url, path, options)
-	options = vim.F.if_nil(options, {})
-
-	local post_clone = {}
-
-	if options.branch ~= nil then
-		table.insert(post_clone, { "checkout", options.branch })
-	end
-
-	if options.tag ~= nil then
-		table.insert(post_clone, { "checkout", options.tag })
-	end
-
-	if options.commit ~= nil then
-		table.insert(post_clone, { "checkout", options.commit })
-	end
-
-	git({ "clone", url, path }, function()
-		log.debug("Cloned %s", url)
-
-		for _, command in ipairs(post_clone) do
-			git(command, nil, { cwd = path })
-		end
-	end)
-end
-
---- Pulls the latest commit in the Git repository located at `path`.
+--- Finds the default branch name for the repo at the given `path`.
 ---
 ---@param path string
-local function pull(path)
-	git({ "pull" }, nil, { cwd = path })
+---
+---@return string branch
+local function default_branch(path)
+	local command = { "git", "symbolic-ref", "refs/remotes/origin/HEAD", "--short" }
+	local result = util.shell(command, { cwd = path }):wait()
+
+	if result.code ~= 0 then
+		log.error("Failed to find branch name for %s: %s", path, vim.inspect(result))
+		return "master"
+	end
+
+	return vim.trim(result.stdout):match(".-/(.*)")
 end
 
 return {
+	checkout = checkout,
 	clone = clone,
 	pull = pull,
+	default_branch = default_branch,
 }

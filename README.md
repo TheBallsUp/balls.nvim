@@ -17,11 +17,11 @@ updating them.
 To install balls.nvim put the following code into your `init.lua`:
 
 ```lua
--- Replace `alphakeks` with your own name here!
+-- You can replace `balls` here with whatever you want, but if you want balls.nvim to keep itself up
+-- to date it must either be `balls` or match the `packpath` parameter you pass to `balls.setup()`.
 --
--- Alternatively replace it will `balls` and make sure to register balls.nvim itself as a plugin
--- somewhere in your config. If you don't, it will uninstall itself!
-local balls_path = vim.fn.stdpath("config") .. "/pack/alphakeks/start/balls.nvim"
+-- See `:help balls-api`.
+local balls_path = vim.fn.stdpath("config") .. "/pack/balls/start/balls.nvim"
 
 if not vim.uv.fs_stat(balls_path) then
   local command = { "git", "clone", "https://github.com/AlphaKeks/balls.nvim", balls_path }
@@ -48,16 +48,10 @@ require("balls").register({
   -- Some URL pointing to a git repository.
   --
   -- This could be HTTPS or ssh and will shell out to git
-  url = "<git url>",
+  url = "<Git URL>",
 
-  -- You can specify a specific git branch.
-  branch = nil,
-
-  -- You can specify a specific git tag.
-  tag = nil,
-
-  -- You can specify a specific git commit hash.
-  commit = nil,
+  -- You can specify a specific git revision (commit).
+  rev = nil,
 
   -- You can specify a custom name.
   --
@@ -76,30 +70,10 @@ require("balls").register({
 })
 ```
 
-## Lazy Loading
-
-You can lazy load a plugin by setting `lazy = true` when registering it. This will cause it to be
-installed into `pack/balls/opt/`, which means you will have to use the `:packadd` command to load
-it. For example, to load a plugin on a specific event, you could write code like this:
-
-```lua
-require("balls").register({
-  url = "https://github.com/hrsh7th/nvim-cmp.git",
-  lazy = true,
-})
-
-vim.api.nvim_create_autocmd("InsertEnter", {
-  desc = "Loads nvim-cmp when entering insert mode",
-  callback = function()
-    vim.cmd.packadd("nvim-cmp")
-
-    require("cmp").setup({
-      -- your cmp setup here
-    })
-  end,
-})
-```
-
 ## API
 
 See `:help balls-api`.
+
+## Lazy Loading
+
+See `:help balls-lazy-loading`.

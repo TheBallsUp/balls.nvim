@@ -5,29 +5,27 @@
 --[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
----@type BallsPlugin[]
-BALLS_PLUGINS = {}
-
-vim.api.nvim_create_user_command("BallsInstall", function()
-	require("balls").install_all()
-end, {
-	desc = "Installs all plugins registered by balls.nvim",
-})
-
-vim.api.nvim_create_user_command("BallsUpdate", function()
-	require("balls").update_all()
-end, {
-	desc = "Updates all plugins registered by balls.nvim",
-})
-
-vim.api.nvim_create_user_command("BallsSync", function()
-	require("balls").sync_all()
-end, {
-	desc = "Installs and updates all plugins registered by balls.nvim",
-})
+if BALLS_PLUGINS == nil then
+	---@type BallsPlugin[]
+	BALLS_PLUGINS = {}
+end
 
 vim.api.nvim_create_user_command("BallsList", function()
-	require("balls.ui").display_list()
-end, {
-	desc = "Installs and updates all plugins registered by balls.nvim",
+	require("balls").list()
+end, { desc = "Lists all plugins installed by balls.nvim" })
+
+vim.api.nvim_create_user_command("BallsInstall", function()
+	require("balls").install()
+end, { desc = "Makes sure all registered plugins are installed" })
+
+vim.api.nvim_create_user_command("BallsUpdate", function()
+	require("balls").update()
+end, { desc = "Makes sure all registered plugins are installed" })
+
+vim.api.nvim_create_user_command("BallsSync", function()
+	require("balls").sync()
+end, { desc = "Makes sure all registered plugins are installed and up to date" })
+
+require("balls").register({
+	url = "https://github.com/AlphaKeks/balls.nvim",
 })
