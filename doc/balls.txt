@@ -134,14 +134,14 @@ balls.lazy_load({plugin_name}, {events}, {callback})         *balls.lazy_load()*
 ================================================================================
 TYPES                                                              *balls-types*
 
-|BallsConfig| Configuration to be bassed to |balls.setup()|
+*BallsConfig* Configuration to be bassed to |balls.setup()|
 >lua
     ---@class BallsConfig
     ---
     ---@field packpath string? Custom path for storing plugins.
     ---@field debug boolean? Emit debug logs.
 <
-|BallsPluginConfig| Configuration to be passed to |balls.register()|
+*BallsPluginConfig* Configuration to be passed to |balls.register()|
 >lua
     ---@class BallsPluginConfig
     ---
@@ -153,7 +153,7 @@ TYPES                                                              *balls-types*
     ---@field lazy boolean? Whether this plugin should be loaded automatically.
     ---@field on_sync BallsOnSync? Post-update hook.
 <
-|BallsPlugin| Internal representation of a registered plugin
+*BallsPlugin* Internal representation of a registered plugin
 >lua
     ---@class BallsPlugin
     ---
@@ -165,7 +165,7 @@ TYPES                                                              *balls-types*
     ---@field lazy boolean Whether this plugin lives in `opt/`.
     ---@field on_sync BallsOnSync? Post-update hook.
 <
-|BallsOnSync| Custom hook to run after installing / updating a plugin
+*BallsOnSync* Custom hook to run after installing / updating a plugin
 >lua
     ---@alias BallsOnSync fun(plugin: BallsPlugin)
 <
