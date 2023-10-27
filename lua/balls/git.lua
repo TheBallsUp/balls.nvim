@@ -5,7 +5,6 @@
 --[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
-local fs = require("balls.fs")
 local util = require("balls.util")
 local log = require("balls.log")
 

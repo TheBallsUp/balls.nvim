@@ -22,6 +22,5 @@ local function exists(path)
 end
 
 return {
-	plugin_path = plugin_path,
 	exists = exists,
 }

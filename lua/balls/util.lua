@@ -6,7 +6,6 @@
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
 local fs = require("balls.fs")
-local log = require("balls.log")
 
 --- Runs a shell command.
 --- Thin wrapper around |vim.system()|.

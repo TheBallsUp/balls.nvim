@@ -31,7 +31,6 @@
 ---@alias BallsOnSync fun(plugin: BallsPlugin)
 
 local util = require("balls.util")
-local fs = require("balls.fs")
 local git = require("balls.git")
 local log = require("balls.log")
 
