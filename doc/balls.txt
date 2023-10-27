@@ -134,7 +134,7 @@ balls.lazy_load({plugin_name}, {events}, {callback})         *balls.lazy_load()*
 ================================================================================
 TYPES                                                              *balls-types*
 
-*BallsConfig* Configuration to be bassed to |balls.setup()|
+*BallsConfig* Configuration to be passed to |balls.setup()|
 >lua
     ---@class BallsConfig
     ---
