@@ -86,7 +86,7 @@ balls.setup({config})                                            *balls.setup()*
     Setup function to configure |balls.nvim|.
 
     Parameters:
-      • {config} (|BallsConfig|)
+      • {config} (|balls.Config|)
 
 balls.register({plugin})                                      *balls.register()*
     Function to register a plugin.
@@ -94,7 +94,7 @@ balls.register({plugin})                                      *balls.register()*
     when running |:BallsUpdate|.
 
     Parameters:
-      • {plugin} (|BallsPluginConfig|)
+      • {plugin} (|balls.PluginConfig|)
 
 balls.list({plugin})                                              *balls.list()*
     Lua API for |:BallsList|.
