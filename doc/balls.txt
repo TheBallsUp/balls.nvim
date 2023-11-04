@@ -134,16 +134,18 @@ balls.lazy_load({plugin_name}, {events}, {callback})         *balls.lazy_load()*
 ================================================================================
 TYPES                                                              *balls-types*
 
-*BallsConfig* Configuration to be passed to |balls.setup()|
+All types are namespaced as `balls.*` so they don't clash with any other types.
+
+*balls.Config* Configuration to be passed to |balls.setup()|
 >lua
-    ---@class BallsConfig
+    ---@class balls.Config
     ---
     ---@field packpath string? Custom path for storing plugins.
     ---@field debug boolean? Emit debug logs.
 <
-*BallsPluginConfig* Configuration to be passed to |balls.register()|
+*balls.PluginConfig* Configuration to be passed to |balls.register()|
 >lua
-    ---@class BallsPluginConfig
+    ---@class balls.PluginConfig
     ---
     ---@field name string? Custom name for the plugin.
     ---
@@ -151,11 +153,11 @@ TYPES                                                              *balls-types*
     ---@field rev string? Git revision for pinning the plugin's version.
     ---
     ---@field lazy boolean? Whether this plugin should be loaded automatically.
-    ---@field on_sync BallsOnSync? Post-update hook.
+    ---@field on_sync balls.OnSync? Post-update hook.
 <
-*BallsPlugin* Internal representation of a registered plugin
+*balls.Plugin* Internal representation of a registered plugin
 >lua
-    ---@class BallsPlugin
+    ---@class balls.Plugin
     ---
     ---@field name string Name of the plugin. This will be used as the directory name as well.
     ---
@@ -163,11 +165,11 @@ TYPES                                                              *balls-types*
     ---@field rev string Git revision for pinning the plugin's version.
     ---
     ---@field lazy boolean Whether this plugin lives in `opt/`.
-    ---@field on_sync BallsOnSync? Post-update hook.
+    ---@field on_sync balls.OnSync? Post-update hook.
 <
-*BallsOnSync* Custom hook to run after installing / updating a plugin
+*balls.OnSync* Custom hook to run after installing / updating a plugin
 >lua
-    ---@alias BallsOnSync fun(plugin: BallsPlugin)
+    ---@alias balls.OnSync fun(plugin: balls.Plugin)
 <
 ================================================================================
 

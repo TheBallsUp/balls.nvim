@@ -6,7 +6,7 @@
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
 ---@private
----@class BallsPlugin
+---@class balls.Plugin
 ---
 ---@field name string Name of the plugin. This will be used as the directory name as well.
 ---
@@ -14,11 +14,11 @@
 ---@field rev string Git revision for pinning the plugin's version.
 ---
 ---@field lazy boolean Whether this plugin lives in `opt/`.
----@field on_sync BallsOnSync? Post-update hook.
+---@field on_sync balls.OnSync? Post-update hook.
 ---
----@field path fun(self: BallsPlugin): string
+---@field path fun(self: balls.Plugin): string
 
----@class BallsPluginConfig
+---@class balls.PluginConfig
 ---
 ---@field name string? Custom name for the plugin.
 ---
@@ -26,22 +26,22 @@
 ---@field rev string? Git revision for pinning the plugin's version.
 ---
 ---@field lazy boolean? Whether this plugin should be loaded automatically.
----@field on_sync BallsOnSync? Post-update hook.
+---@field on_sync balls.OnSync? Post-update hook.
 
----@alias BallsOnSync fun(plugin: BallsPlugin)
+---@alias balls.OnSync fun(plugin: balls.Plugin)
 
 local util = require("balls.util")
 local git = require("balls.git")
 local log = require("balls.log")
 
 if BALLS_PLUGINS == nil then
-	---@type BallsPlugin[]
+	---@type balls.Plugin[]
 	BALLS_PLUGINS = {}
 end
 
 --- Configure balls.nvim
 ---
----@param config BallsConfig
+---@param config balls.Config
 local function setup(config)
 	for key, value in pairs(config) do
 		require("balls.config"):set(key, value)
@@ -50,7 +50,7 @@ end
 
 --- Registers a plugin so it can be managed by balls.nvim.
 ---
----@param plugin_config BallsPluginConfig
+---@param plugin_config balls.PluginConfig
 local function register(plugin_config)
 	local url_parts = vim.split(plugin_config.url, "/")
 	local last = url_parts[#url_parts]
@@ -61,7 +61,7 @@ local function register(plugin_config)
 
 	local name = vim.F.if_nil(plugin_config.name, last)
 
-	---@type BallsPlugin
+	---@type balls.Plugin
 	local plugin = vim.tbl_extend("force", {
 		name = name,
 		lazy = false,

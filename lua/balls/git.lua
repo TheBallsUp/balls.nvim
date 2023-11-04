@@ -12,7 +12,7 @@ local log = require("balls.log")
 ---
 ---@private
 ---
----@param plugin BallsPlugin
+---@param plugin balls.Plugin
 ---@param rev string?
 local function checkout(plugin, rev)
 	local command = { "git", "checkout", vim.F.if_nil(rev, plugin.rev) }
@@ -35,7 +35,7 @@ end
 ---
 ---@private
 ---
----@param plugin BallsPlugin
+---@param plugin balls.Plugin
 local function clone(plugin)
 	local result = util.shell({ "git", "clone", plugin.url, plugin:path() }):wait()
 
@@ -59,7 +59,7 @@ end
 ---
 ---@private
 ---
----@param plugin BallsPlugin
+---@param plugin balls.Plugin
 local function pull(plugin)
 	if plugin.rev ~= nil then
 		return

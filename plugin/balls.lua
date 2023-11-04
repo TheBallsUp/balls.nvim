@@ -6,7 +6,7 @@
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
 if BALLS_PLUGINS == nil then
-	---@type BallsPlugin[]
+	---@type balls.Plugin[]
 	BALLS_PLUGINS = {}
 end
 

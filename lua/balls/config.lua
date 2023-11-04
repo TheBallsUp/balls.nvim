@@ -5,7 +5,7 @@
 --[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
----@class BallsConfig
+---@class balls.Config
 ---
 ---@field packpath string? Custom path for storing plugins.
 ---@field debug boolean? Emit debug logs.
