@@ -70,6 +70,31 @@ require("balls").register({
 })
 ```
 
+## Making type definitions available with [`lua_ls`](https://github.com/LuaLS/lua-language-server)
+
+If you use LSP, you can make `lua_ls` recognize type definitions from balls.nvim by setting it up
+like so:
+
+```lua
+local packpath = require("balls.config").packpath
+
+vim.lsp.start({
+ -- ... other options
+  settings = {
+    Lua = {
+      workspace = {
+        library = {
+          vim.fs.joinpath(packpath, "start", "balls.nvim"),
+        },
+      },
+    },
+  },
+})
+```
+
+This will make sure that it scans the directory, which means you'll get LSP type hints and
+completion when using balls' Lua API (e.g. `balls.register()`).
+
 ## API
 
 See `:help balls-api`.
