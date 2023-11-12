@@ -21,7 +21,7 @@ To install balls.nvim put the following code into your `init.lua`:
 -- to date it must either be `balls` or match the `packpath` parameter you pass to `balls.setup()`.
 --
 -- See `:help balls-api`.
-local balls_path = vim.fn.stdpath("config") .. "/pack/balls/start/balls.nvim"
+local balls_path = vim.fs.joinpath(vim.fn.stdpath("config"), "/pack/balls/start/balls.nvim")
 
 if not vim.uv.fs_stat(balls_path) then
   local command = { "git", "clone", "https://github.com/AlphaKeks/balls.nvim", balls_path }
@@ -29,13 +29,11 @@ if not vim.uv.fs_stat(balls_path) then
   local result = vim.system(command, opts):wait()
 
   if result.code ~= 0 then
-    vim.print("Failed to install balls.nvim! " .. vim.inspect(result))
-    return
+    error("Failed to install balls.nvim! " .. vim.inspect(result))
   end
 
-  vim.print("Installed balls.nvim! Run `:BallsInstall` to install your plugins.")
-  vim.cmd.packadd("balls.nvim")
-  vim.cmd.helptags("ALL")
+  vim.cmd.packloadall()
+  vim.notify("Installed balls.nvim! Run `:BallsIntall` to install registered plugins.")
 end
 ```
 

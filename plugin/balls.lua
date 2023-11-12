@@ -29,3 +29,5 @@ end, { desc = "Makes sure all registered plugins are installed and up to date" }
 require("balls").register({
 	url = "https://github.com/AlphaKeks/balls.nvim",
 })
+
+vim.cmd.helptags("ALL")

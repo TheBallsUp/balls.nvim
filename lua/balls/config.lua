@@ -11,7 +11,7 @@
 ---@field debug boolean? Emit debug logs.
 
 local config = {
-	packpath = vim.fn.stdpath("config") .. "/pack/balls",
+	packpath = vim.fs.joinpath(vim.fn.stdpath("config"), "pack", "balls"),
 	debug = false,
 }
 

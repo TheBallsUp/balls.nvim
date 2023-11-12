@@ -17,7 +17,7 @@ local log = require("balls.log")
 local function checkout(plugin, rev)
 	local command = { "git", "checkout", vim.F.if_nil(rev, plugin.rev) }
 	local opts = { cwd = plugin:path() }
-	local result = util.shell(command, opts):wait()
+	local result = vim.system(command, opts):wait()
 
 	if result.code ~= 0 then
 		return log.error(
@@ -37,7 +37,7 @@ end
 ---
 ---@param plugin balls.Plugin
 local function clone(plugin)
-	local result = util.shell({ "git", "clone", plugin.url, plugin:path() }):wait()
+	local result = vim.system({ "git", "clone", plugin.url, plugin:path() }):wait()
 
 	if result.code ~= 0 then
 		return log.error("Failed to clone plugin `%s`: %s", plugin.name, vim.inspect(result))
@@ -65,7 +65,7 @@ local function pull(plugin)
 		return
 	end
 
-	local result = util.shell({ "git", "pull" }, { cwd = plugin:path() }):wait()
+	local result = vim.system({ "git", "pull" }, { cwd = plugin:path() }):wait()
 
 	if result.code ~= 0 then
 		return log.error("Failed to pull updates for plugin `%s`: %s", plugin.name, vim.inspect(result))
@@ -86,7 +86,7 @@ end
 ---@return string branch
 local function default_branch(path)
 	local command = { "git", "symbolic-ref", "refs/remotes/origin/HEAD", "--short" }
-	local result = util.shell(command, { cwd = path }):wait()
+	local result = vim.system(command, { cwd = path }):wait()
 
 	if result.code ~= 0 then
 		log.error("Failed to find branch name for %s: %s", path, vim.inspect(result))

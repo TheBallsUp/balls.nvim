@@ -125,17 +125,19 @@ local function sync()
 				if plugin.lazy and path == "start" then
 					local start = vim.fs.joinpath(path, plugin.name)
 					local opt = start:gsub("start", "opt", 1)
-					util.shell({ "mv", start, opt }, nil, vim.schedule_wrap(function(result)
+					vim.system({ "mv", start, opt }, nil, vim.schedule_wrap(function(result)
 						if result.code ~= 0 then
-							return log.error("Failed to move %s from start/ to opt/: %s", plugin.name, vim.inspect(result))
+							return log.error("Failed to move %s from start/ to opt/: %s", plugin.name,
+								vim.inspect(result))
 						end
 					end))
 				elseif not plugin.lazy and path == "start" then
 					local opt = vim.fs.joinpath(path, plugin.name)
 					local start = opt:gsub("opt", "start", 1)
-					util.shell({ "mv", opt, start }, nil, vim.schedule_wrap(function(result)
+					vim.system({ "mv", opt, start }, nil, vim.schedule_wrap(function(result)
 						if result.code ~= 0 then
-							return log.error("Failed to move %s from opt/ to start/: %s", plugin.name, vim.inspect(result))
+							return log.error("Failed to move %s from opt/ to start/: %s", plugin.name,
+								vim.inspect(result))
 						end
 					end))
 				end
@@ -144,13 +146,14 @@ local function sync()
 			if not is_plugin then
 				log.warn("Removing %s", dir)
 
-				util.shell({ "rm", "-rf", vim.fs.joinpath(path, dir) }, nil, vim.schedule_wrap(function(result)
-					if result.code ~= 0 then
-						return log.error("Failed to remove %s: %s", dir, vim.inspect(result))
-					end
+				vim.system({ "rm", "-rf", vim.fs.joinpath(path, dir) }, nil,
+					vim.schedule_wrap(function(result)
+						if result.code ~= 0 then
+							return log.error("Failed to remove %s: %s", dir, vim.inspect(result))
+						end
 
-					log.info("Removed %s", dir)
-				end))
+						log.info("Removed %s", dir)
+					end))
 			end
 		end
 	end
@@ -184,9 +187,10 @@ local function sync()
 			return
 		end
 
-		util.shell(command, nil, vim.schedule_wrap(function(result)
+		vim.system(command, nil, vim.schedule_wrap(function(result)
 			if result.code ~= 0 then
-				return log.error("Failed to move %s from opt/ to start/: %s", plugin.name, vim.inspect(result))
+				return log.error("Failed to move %s from opt/ to start/: %s", plugin.name,
+					vim.inspect(result))
 			end
 		end))
 	end

@@ -5,33 +5,21 @@
 --[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
 --[[ <https://www.gnu.org/licenses/>.                                                             ]]
 
-local fs = require("balls.fs")
-
---- Runs a shell command.
---- Thin wrapper around |vim.system()|.
----
----@param command string[] shell command arguments
----@param options SystemOpts?
----@param on_exit fun(result: vim.SystemCompleted)?
----
----@return vim.SystemObj
-local function shell(command, options, on_exit)
-	options = vim.tbl_extend("force", { text = true }, vim.F.if_nil(options, {}))
-
-	return vim.system(command, options, on_exit)
-end
-
 --- Makes sure the given `plugin` is installed.
 ---
 ---@private
 ---
 ---@return boolean already_installed
 local function ensure_installed(plugin)
-	if fs.exists(plugin:path()) then
+	if vim.uv.fs_stat(plugin:path()) then
 		return true
 	end
 
 	require("balls.git").clone(plugin)
+
+	vim.cmd.packloadall()
+	vim.cmd.helptags("ALL")
+
 	return false
 end
 
@@ -44,10 +32,12 @@ local function update(plugin)
 	else
 		require("balls.git").pull(plugin)
 	end
+
+	vim.cmd.packloadall()
+	vim.cmd.helptags("ALL")
 end
 
 return {
-	shell = shell,
 	ensure_installed = ensure_installed,
 	update = update,
 }
