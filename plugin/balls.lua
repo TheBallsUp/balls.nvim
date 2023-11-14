@@ -1,10 +1,3 @@
---[[ Copyright (C) AlphaKeks <alphakeks@dawn.sh>                                                  ]]
---[[                                                                                              ]]
---[[ This is free software: you may redistribute it and / or modify it under the terms of the GNU ]]
---[[ General Public License version 3.                                                            ]]
---[[ For a copy of the full license see the LICENSE file at the root of this repository or visit  ]]
---[[ <https://www.gnu.org/licenses/>.                                                             ]]
-
 if BALLS_PLUGINS == nil then
 	---@type balls.Plugin[]
 	BALLS_PLUGINS = {}
@@ -27,7 +20,7 @@ vim.api.nvim_create_user_command("BallsSync", function()
 end, { desc = "Makes sure all registered plugins are installed and up to date" })
 
 require("balls").register({
-	url = "https://github.com/AlphaKeks/balls.nvim",
+	url = "https://github.com/TheBallsUp/balls.nvim",
 })
 
 vim.cmd.helptags("ALL")
