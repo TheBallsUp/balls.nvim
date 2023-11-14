@@ -1,36 +1,22 @@
---- Makes sure the given `plugin` is installed.
+local M = {}
+
+--- @class balls.SystemOpts : SystemOpts
 ---
----@private
+--- @field on_exit? fun(result: vim.SystemCompleted)
+
+--- @param command string[]
+--- @param opts? balls.SystemOpts
 ---
----@return boolean already_installed
-local function ensure_installed(plugin)
-	if vim.uv.fs_stat(plugin:path()) then
-		return true
+--- @return vim.SystemCompleted | vim.SystemObj
+function M.system(command, opts)
+	opts = vim.F.if_nil(opts, {})
+	opts.text = vim.F.if_nil(opts.text, true)
+
+	if opts.on_exit == nil then
+		return vim.system(command, opts):wait()
 	end
 
-	require("balls.git").clone(plugin)
-
-	vim.cmd.packloadall()
-	vim.cmd.helptags("ALL")
-
-	return false
+	return vim.system(command, opts, vim.schedule_wrap(opts.on_exit))
 end
 
---- Makes sure the given `plugin` is up to date.
----
----@private
-local function update(plugin)
-	if plugin.rev ~= nil then
-		require("balls.git").checkout(plugin)
-	else
-		require("balls.git").pull(plugin)
-	end
-
-	vim.cmd.packloadall()
-	vim.cmd.helptags("ALL")
-end
-
-return {
-	ensure_installed = ensure_installed,
-	update = update,
-}
+return M
