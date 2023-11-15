@@ -123,8 +123,14 @@ function M.list()
 
 	format(_G.BALLS_PLUGINS["balls.nvim"])
 
-	for name, plugin in pairs(_G.BALLS_PLUGINS) do
-		if name ~= "balls.nvim" then
+	local plugins = vim.tbl_values(_G.BALLS_PLUGINS)
+
+	table.sort(plugins, function(a, b)
+		return a.name > b.name
+	end)
+
+	for _, plugin in ipairs(plugins) do
+		if plugin.name ~= "balls.nvim" then
 			format(plugin)
 		end
 	end
