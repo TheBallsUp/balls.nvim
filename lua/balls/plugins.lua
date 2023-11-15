@@ -93,6 +93,13 @@ function M._update(plugin)
 			end
 
 			require("balls.log").info("Updated `%s`!", plugin.name)
+
+			plugin:helptags()
+
+			if plugin.on_sync ~= nil then
+				plugin:on_sync()
+				require("balls.log").info("Ran on_sync callback for `%s`!", plugin.name)
+			end
 		end,
 	})
 end
@@ -171,10 +178,10 @@ function M._sync(plugin)
 		})
 	end
 
-	plugin:checkout()
-
-	if plugin.on_sync ~= nil then
-		plugin:on_sync()
+	if plugin:installed() then
+		plugin:update()
+	else
+		plugin:install()
 	end
 end
 

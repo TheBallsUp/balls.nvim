@@ -126,7 +126,7 @@ function M.list()
 	local plugins = vim.tbl_values(_G.BALLS_PLUGINS)
 
 	table.sort(plugins, function(a, b)
-		return a.name > b.name
+		return a.name < b.name
 	end)
 
 	for _, plugin in ipairs(plugins) do

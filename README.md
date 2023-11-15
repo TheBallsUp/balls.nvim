@@ -12,7 +12,7 @@ wrapper around some git commands.
 To install `balls.nvim`, put the following code somewhere into your config (e.g. `init.lua`):
 
 ```lua
-local balls_path = vim.fn.stdpath("config") .. "/pack/balls/start/balls.nvim"
+local balls_path = vim.fs.joinpath(vim.fn.stdpath("config"), "pack", "balls", "start", "balls.nvim")
 
 if not vim.uv.fs_stat(balls_path) then
   local command = {
@@ -31,6 +31,7 @@ if not vim.uv.fs_stat(balls_path) then
     end
 
     vim.notify("Installed balls.nvim!", vim.log.levels.INFO)
+    vim.cmd.helptags(vim.fs.joinpath(balls_path, "doc"))
   end)
 end
 ```
