@@ -187,11 +187,7 @@ end
 --- Syncs the list of registered plugins with the actually installed plugins on the system.
 function M.sync()
 	for _, plugin in pairs(_G.BALLS_PLUGINS) do
-		if plugin:installed() then
-			plugin:sync()
-		else
-			plugin:install()
-		end
+		plugin:sync()
 	end
 
 	M.clean()

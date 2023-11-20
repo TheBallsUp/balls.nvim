@@ -8,7 +8,7 @@
 ---
 --- @field on_sync? fun(self: balls.Plugin) Callback function to run anytime the plugin installs / updates.
 ---
---- @field path fun(): string Returns the local installation path of this plugin.
+--- @field path fun(self: balls.Plugin, lazy?: boolean): string Returns the local installation path of this plugin.
 --- @field installed fun(self: balls.Plugin): boolean Returns whether the plugin is installed.
 --- @field install fun(self: balls.Plugin) Installs this plugin locally.
 --- @field update fun(self: balls.Plugin) Updates this plugin.

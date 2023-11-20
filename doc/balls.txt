@@ -194,7 +194,7 @@ TYPES                                                              *balls-types*
     • name (string)
     • lazy (boolean)
     • on_sync? (fun(self: |balls.Plugin|))
-    • path (fun(self: |balls.Plugin|): string)
+    • path (fun(self: |balls.Plugin|, lazy?: boolean): string)
     • installed (fun(self: |balls.Plugin|): boolean)
     • install (fun(self: |balls.Plugin))
     • update (fun(self: |balls.Plugin))
