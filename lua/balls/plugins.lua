@@ -1,20 +1,26 @@
 local M = {}
 
---- @type fun(path: string): boolean
---- @diagnostic disable-next-line
-local exists = vim.uv.fs_stat
+--- @param path string
+---
+--- @return boolean exists
+local exists = function(path)
+	--- @diagnostic disable-next-line
+	return vim.uv.fs_stat(path) ~= nil
+end
 
 --- Returns the path of a plugin.
 ---
 --- @private
 ---
 --- @param plugin balls.Plugin
+--- @param lazy? boolean
 ---
 --- @return string path
-function M._path(plugin)
+function M._path(plugin, lazy)
+	lazy = vim.F.if_nil(lazy, plugin.lazy)
 	local packpath = require("balls.config").packpath
 
-	if plugin.lazy then
+	if lazy then
 		packpath = vim.fs.joinpath(packpath, "opt")
 	else
 		packpath = vim.fs.joinpath(packpath, "start")
@@ -149,40 +155,54 @@ end
 ---
 --- @param plugin balls.Plugin
 function M._sync(plugin)
-	local path = plugin:path()
-	local start = path:gsub("opt", "start", 1)
-	local opt = path:gsub("start", "opt", 1)
-	local command = { "rm", "-rf" }
+	local start = plugin:path(false)
+	local opt = plugin:path(true)
+	local command = nil
+	local destination = nil
 
 	if plugin.lazy and exists(start) then
-		table.insert(command, start)
+		command = { "mv", start, opt }
+		destination = "opt/"
 	elseif not plugin.lazy and exists(opt) then
-		table.insert(command, opt)
+		command = { "mv", opt, start }
+		destination = "start/"
 	end
 
-	if #command == 3 then
-		require("balls.util").system(command, {
-			on_exit = function(result)
-				if result.code ~= 0 then
-					require("balls.log").error(
-						"Failed to remove old version of `%s`: %s",
-						plugin.name,
-						vim.inspect(result)
-					)
+	if command == nil then
+		if plugin:installed() then
+			plugin:update()
+		else
+			plugin:install()
+		end
 
-					return
-				end
-
-				require("balls.log").debug("Removed old version of `%s`.", plugin.name)
-			end,
-		})
+		return
 	end
 
-	if plugin:installed() then
-		plugin:update()
-	else
-		plugin:install()
+	--- @diagnostic disable-next-line
+	start = vim.fs.dirname(start)
+
+	if start ~= nil and not exists(start) then
+		vim.fn.mkdir(start, "p")
 	end
+
+	--- @diagnostic disable-next-line
+	opt = vim.fs.dirname(opt)
+
+	if opt ~= nil and not exists(opt) then
+		vim.fn.mkdir(opt, "p")
+	end
+
+	require("balls.util").system(command, {
+		on_exit = function(result)
+			if result.code ~= 0 then
+				require("balls.log").error("Failed to move `%s`: %s", plugin.name, vim.inspect(result))
+				return
+			end
+
+			require("balls.log").debug("Moved `%s` to `%s`.", plugin.name, destination)
+			plugin:update()
+		end,
+	})
 end
 
 --- Generates helptags for a plugin.
