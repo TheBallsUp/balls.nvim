@@ -69,24 +69,14 @@ function M.register(plugin_spec)
 		plugin_is_lazy = { lazy, "boolean" },
 	})
 
-	local P = require("balls.plugins")
-
 	--- @type balls.Plugin
-	local plugin = {
+	local plugin = require("balls.plugins").new({
 		url = plugin_spec.url,
 		rev = plugin_spec.rev,
 		name = plugin_name,
 		lazy = lazy,
 		on_sync = plugin_spec.on_sync,
-		path = P._path,
-		installed = P._installed,
-		install = P._install,
-		update = P._update,
-		checkout = P._checkout,
-		sync = P._sync,
-		helptags = P._helptags,
-		lazy_load = P._lazy_load,
-	}
+	})
 
 	_G.BALLS_PLUGINS[plugin.name] = plugin
 	require("balls.log").debug("Registered plugin `%s`.", plugin.name)
@@ -178,8 +168,6 @@ function M.update()
 	for _, plugin in pairs(_G.BALLS_PLUGINS) do
 		if plugin:installed() then
 			plugin:update()
-		else
-			plugin:install()
 		end
 	end
 end
@@ -195,8 +183,12 @@ end
 
 --- Removes any unregistered plugins that are still installed.
 function M.clean()
+	local config = require("balls.config")
+	local util = require("balls.util")
+	local log = require("balls.log")
+
 	local registered_plugins = vim.tbl_keys(_G.BALLS_PLUGINS)
-	local packpath = require("balls.config").packpath
+	local packpath = config.packpath
 	local start = vim.fs.joinpath(packpath, "start")
 	local opt = vim.fs.joinpath(packpath, "opt")
 	local to_remove = {}
@@ -218,14 +210,14 @@ function M.clean()
 	end
 
 	for _, path in ipairs(to_remove) do
-		require("balls.util").system({ "rm", "-rf", path }, {
+		util.system({ "rm", "-rf", path }, {
 			on_exit = function(result)
 				if result.code ~= 0 then
-					require("balls.log").error("Failed to remove `%s`: %s", path, vim.inspect(result))
+					log.error("Failed to remove `%s`: %s", path, vim.inspect(result))
 					return
 				end
 
-				require("balls.log").info("Removed `%s`.", path)
+				log.info("Removed `%s`.", path)
 			end,
 		})
 	end

@@ -124,12 +124,15 @@ can then load it whenever you want using the |:packadd| command.
 If you want to use |autocmd|s to load your plugins, |balls.nvim| provides a nice
 wrapper function to do exactly that. |balls.register()| returns a |balls.Plugin|
 which contains all the properties about that plugin. This includes a helper
-function called `lazy_load`. It's a minimal wrapper around an |autocmd|.
+function called `load_on`. It's a minimal wrapper around an |autocmd|.
 >lua
     local balls = require("balls")
-    local cmp = balls.register({ url = "https://github.com/hrsh7th/nvim-cmp" })
+    local cmp = balls.register({
+      url = "https://github.com/hrsh7th/nvim-cmp",
+      lazy = true,
+    })
 
-    cmp:lazy_load("InsertEnter", {
+    cmp:load_on("InsertEnter", {
       callback = function(event, plugin)
         require("cmp").setup({
           -- ...
@@ -145,8 +148,8 @@ the plugin itself in case you didn't store the return value of
 |balls.register()| in a variable and just chained the functions together.
 >lua
     require("balls")
-      .register({ url = "https://github.com/hrsh7th/nvim-cmp" })
-      :lazy_load("InsertEnter", {
+      .register({ url = "https://github.com/hrsh7th/nvim-cmp", lazy = true })
+      :load_on("InsertEnter", {
         callback = function(event, plugin)
           require("cmp").setup({
             -- ...
@@ -201,13 +204,13 @@ TYPES                                                              *balls-types*
     • sync (fun(self: |balls.Plugin))
     • checkout (fun(self: |balls.Plugin|, rev?: string))
     • helptags (fun(self: |balls.Plugin|))
-    • lazy_load (fun(
+    • load_on (fun(
         self: |balls.Plugin|,
         events: string | string[],
-        opts: |balls.EventOpts|
+        opts?: |balls.EventOpts|
       ))
 
-*balls.EventOpts*  (table) Options to pass to |balls.Plugin|`:lazy_load()`
+*balls.EventOpts*  (table) Options to pass to |balls.Plugin|`:load_on()`
     • group? (string | integer)
     • pattern? (string | string[])
     • buffer? (integer)
