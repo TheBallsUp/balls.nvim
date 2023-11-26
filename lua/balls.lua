@@ -120,6 +120,7 @@ function Balls:register(url, plugin_spec)
 		--- @type balls.EventOpts
 		opts = if_nil(opts, {})
 		opts.group = vim.api.nvim_create_augroup("balls_lazy_" .. self.name, { clear = true })
+		opts.once = true
 
 		local callback = opts.callback
 
