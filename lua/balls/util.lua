@@ -71,9 +71,7 @@ function M.default_branch(repo_dir)
 		return "master"
 	end
 
-	local parts = vim.split(vim.trim(result.stdout), "/", { trimempty = true })
-
-	return parts[#parts]
+	return vim.trim(result.stdout):sub(8)
 end
 
 return M
