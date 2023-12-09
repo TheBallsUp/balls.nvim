@@ -45,7 +45,7 @@ function M.exists(path)
 	return vim.uv.fs_stat(path) ~= nil
 end
 
---- @param ... string[] extra path segments
+--- @param ... string extra path segments
 ---
 --- @return string config_path
 function M.config_path(...)
