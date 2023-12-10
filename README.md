@@ -26,7 +26,7 @@ if vim.uv.fs_stat(balls_path) == nil then
     balls_path,
   }
 
-  vim.system(command, {}, function(result)
+  vim.system(command, {}, vim.schedule_wrap(function(result)
     if result.code ~= 0 then
       error("Failed to install balls.nvim: " .. result.stderr)
     end
@@ -34,7 +34,7 @@ if vim.uv.fs_stat(balls_path) == nil then
     vim.notify("Installed balls.nvim!")
     vim.cmd.packloadall()
     vim.cmd.helptags(vim.fs.joinpath(balls_path, "doc"))
-  end)
+  end))
 end
 ```
 
