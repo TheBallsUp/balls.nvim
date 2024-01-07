@@ -1,90 +1,80 @@
-local function command(name, callback)
-	vim.api.nvim_create_user_command(name, callback, {})
-end
-
-command("BallsList", function()
-	for _, buffer in ipairs(vim.api.nvim_list_bufs()) do
-		if vim.bo[buffer].filetype == "balls" then
-			vim.api.nvim_buf_delete(buffer, {})
-		end
-	end
-
+vim.api.nvim_create_user_command("BallsList", function()
 	local buffer = vim.api.nvim_create_buf(false, true)
-	local plugins = require("balls").plugins
-	local lines = {
-		"Total Plugins: " .. tostring(vim.tbl_count(plugins)),
-	}
+	local list = {}
 
-	table.insert(lines, string.rep("-", #lines[1]))
+	for plugin in require("balls"):plugins() do
+		table.insert(list, "* " .. plugin.name)
 
-	for _, plugin in ipairs(plugins) do
-		table.insert(lines, "* " .. plugin.name)
+		if not plugin:installed() then
+			list[#list] = list[#list] .. " (not installed)"
+		end
+
+		if plugin.lazy ~= require("balls.config").lazy_by_default then
+			table.insert(list, "  • lazy-loaded")
+		end
+
+		if plugin.rev then
+			table.insert(list, "  • revision: " .. plugin.rev)
+		end
 	end
 
-	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, lines)
+	vim.api.nvim_buf_set_lines(buffer, 0, -1, false, list)
 	vim.bo[buffer].modifiable = false
-	vim.bo[buffer].filetype = "balls"
-	vim.cmd.vsplit()
-	vim.api.nvim_set_current_buf(buffer)
-end)
 
-command("BallsInstall", function()
-	for _, plugin in ipairs(require("balls").plugins) do
-		plugin:install()
+	vim.keymap.set("n", "q", function()
+		vim.api.nvim_buf_delete(buffer, { force = true })
+	end, { buffer = buffer })
+
+	vim.api.nvim_open_win(buffer, true, {
+		relative = "editor",
+		width = math.floor(vim.o.columns * 0.5),
+		height = math.floor(vim.o.lines * 0.8),
+		row = math.floor(vim.o.lines * 0.1),
+		col = math.floor(vim.o.columns * 0.25),
+		focusable = true,
+		zindex = 300,
+		style = "minimal",
+		border = "single",
+		title = string.format("[ %d Plugins ]", #list),
+		title_pos = "center",
+	})
+end, { desc = "Displays all currently installed plugins." })
+
+vim.api.nvim_create_user_command("BallsInstall", function()
+	require("balls"):install()
+end, { desc = "Installs any missing plugins." })
+
+vim.api.nvim_create_user_command("BallsUpdate", function(cmd)
+	if cmd.args == "" then
+		require("balls"):update()
+		return
 	end
-end)
 
-command("BallsUpdate", function()
-	for _, plugin in ipairs(require("balls").plugins) do
-		plugin:update()
-	end
-end)
+	local plugin = vim.iter(require("balls").plugin_list):find(function(plugin)
+		return plugin.name == cmd.args
+	end)
 
-command("BallsSync", function()
-	for _, plugin in ipairs(require("balls").plugins) do
-		plugin:sync()
+	if not plugin then
+		error("Invalid plugin `" .. cmd.args .. "`.")
 	end
 
-	vim.cmd.BallsClean()
-end)
-
-command("BallsClean", function()
-	local U = require("balls.util")
-	local packpath = require("balls").config.packpath
-	local start_path = vim.fs.joinpath(packpath, "start")
-	local opt_path = vim.fs.joinpath(packpath, "opt")
-
-	local clean = function(path, dir)
-		path = vim.fs.joinpath(path, dir)
-
-		local should_remove = true
-
-		for _, plugin in ipairs(require("balls").plugins) do
-			if plugin:path() == path then
-				should_remove = false
-				break
+	plugin:update()
+end, {
+	desc = "Updates any installed plugins.",
+	nargs = "?",
+	complete = function(input)
+		return vim.tbl_map(function(plugin)
+			return plugin.name
+		end, vim.tbl_filter(function(plugin)
+			if input == "" then
+				return true
+			else
+				return vim.startswith(plugin.name, input)
 			end
-		end
+		end, require("balls").plugin_list))
+	end,
+})
 
-		if should_remove then
-			U.system({ "rm", "-rf", path }, {
-				on_exit = function(result)
-					if result.code ~= 0 then
-						U.notify_error("Failed to remove `%s`: %s", dir, result.stderr)
-						return
-					end
-
-					U.notify("Removed `%s`!", dir)
-				end,
-			})
-		end
-	end
-
-	for dir in vim.fs.dir(start_path) do
-		clean(start_path, dir)
-	end
-
-	for dir in vim.fs.dir(opt_path) do
-		clean(opt_path, dir)
-	end
-end)
+vim.api.nvim_create_user_command("BallsClean", function()
+	require("balls"):clean()
+end, { desc = "Removes any unused plugins." })

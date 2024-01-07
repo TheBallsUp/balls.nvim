@@ -6,292 +6,340 @@ License: GPLv3.0
 ================================================================================
 INTRODUCTION                                                             *balls*
 
-|balls.nvim| is a plugin manager focused on simplicity.
-This means that it's mostly just a git wrapper with some quality of life
-features around neovim's builtin |packages|. You should be familiar with them to
-understand how plugins are installed and how they integrate with the rest of
-your config.
+|balls.nvim| focuses on a few core principles:
 
-The basic lifecycle goes like this:
+- simplicity: a small, well defined interface, leaving no ambiguity
+- practical, rather than fancy: all the essential functionality you would expect
+  from a plugin manager is included, without any bloat
+- idiomatic: rather than re-implementing a plugin system from scratch,
+  |balls.nvim| is a thin layer around neovim's builtin |packages| and `git`.
 
-1. You |balls:register()| a plugin
-2. The plugin gets added to a global list of plugins
-3. You run |balls-commands| which will then operate on that list
+This means it is much simpler to understand and use than e.g. lazy.nvim, at the
+cost of having less features. If you're like me though, you don't need 90% of
+features most plugin managers offer; all you really need is something that can
+clone some git repositories and keep them up to date. If that's what you're
+looking for, |balls.nvim| is perfect for you!
 
-For example, to install `telescope.nvim`:
+Some useful help pages you can read to better understand how |balls.nvim|
+functions:
+
+- |packages|
+- 'packpath'
+- 'runtimepath'
+
+================================================================================
+GUIDE                                                              *balls-guide*
+
+If you are unfamiliar with neovim plugins, let me give you a quick overview.
+
+Plugins are usually distributed as git repositories, often hosted on GitHub.
+The structure of a plugin is very similar to that of your own config directory,
+except that it's missing an `init.vim` / `init.lua` file. This means that
+"installing" a plugin, really just means cloning the repository into a directory
+where neovim can find and load it. The directories where neovim will check are
+defined by 'packpath'. One of these directories, by default, is the `pack/`
+directory in your config directory. These directories contain |packages|, which
+are made up of a `start/` and an `opt/` directory. Each of those directories can
+contain plugins. An example structure could look like this:
+
+~/.config/nvim/
+  └─ pack/
+     └─ mypackage/
+        ├─ start/
+        │  ├─ plugin_1/
+        │  └─ plugin_2/
+        └─ opt/
+           ├─ plugin_3/
+           └─ plugin_4/
+
+In this configuration, `plugin_*` are git repositories, each with the same
+internal structure as your own config. `plugin_1` and `plugin_2` will be loaded
+automatically on startup, because they are in the `start/` directory. `plugin_3`
+and `plugin_4` on the other hand are in the `opt/` directory, which means they
+are optional plugins; they will not be loaded automatically. You can then load
+them whenever you want using the |:packadd| command.
+
+By default, any plugins installed with |balls.nvim| will be kept in
+`pack/balls/start/`, but you can customize this behavior using |balls:setup()|.
+
+While `pack/` in your config directory is not the only directory in 'packpath',
+I chose it specifically because it allows you to keep plugins as git submodules.
+Many people keep all their configuration files (not just neovim!) in a single
+git repository, often referred to as "dotfiles". If you do this too (and you
+should!), you can add all your neovim plugins as git submodules and version
+control them. This means that if a plugin ever breaks on an update, you can just
+check the latest known commit and pin the plugin to that version until the issue
+is fixed upstream.
+
+With that out of the way, let's install some plugins!
+
+The first step is to register a plugin. This will make it available for
+|balls.nvim| to keep track of. As an example, we will install telescope.nvim.
+
+Somewhere in your config, e.g. in `init.lua`, put the following code:
 >lua
-    local Balls = require("balls")
+        local Balls = require("balls")
 
-    Balls:register("https://github.com/nvim-telescope/telescope.nvim")
+        Balls:register("https://github.com/nvim-telescope/telescope.nvim")
 <
-Then, somewhere in your config, you can access the plugin's modules like you
-would normally:
+If you execute this code, either by running |:source| or by restarting neovim,
+it will be added to a global list of plugins. You can inspect this list by
+running `:lua= require("balls").plugin_list`. To actually install the plugin,
+you can run |:BallsInstall|. This will go through all registered plugins and
+install any missing ones, which in this case is only telescope.nvim.
+
+Many plugins allow you to configure them using a `setup` function. This is just
+a convention, but most neovim plugins follow it. Telescope specifically actually
+doesn't require you to call it at all, but if you wanted to change some
+defaults, you would write the following code:
 >lua
-    local telescope = require("telescope")
+        local telescope = require("telescope")
 
-    telescope.setup({})
+        telescope.setup({
+          -- ... your options here
+        })
 <
-Keep in mind that a call to |balls:register()| is not going to install the
-plugin. You still have to run |:BallsInstall| or call |balls.Plugin.install()|.
-This is why I recommend you use |pcall()| to guard your config against missing
-plugins:
+Note the `require` call in the first line; if telescope isn't installed, it will
+throw an error. The traditional way of avoiding this issue is to use |pcall()|:
 >lua
-    local telescope_installed, telescope = pcall(require, "telescope")
+        local ok, telescope = pcall(require, "telescope")
 
-    if not telescope_installed then
-      return
-    end
+        if not ok then
+          return
+        end
 
-    -- At this point we know that the `require` call succeeded.
-    telescope.setup({})
+        telescope.setup({
+          -- ... your options here
+        })
 <
-This way you don't get a million errors when doing a fresh install or writing
-a config for a new plugin you haven't yet installed.
+Now, if the module can't be found, we return early.
 
-                                                                 *balls-on-sync*
-
-If you want to run a custom function whenever a plugin is installed or updated,
-you can pass the `on_sync` parameter to |balls:register()|. An example use case
-for this is https://github.com/nvim-telescope/telescope-fzf-native.nvim which
-requires you to run a build step for compiling a shared C library.
+|balls.nvim| also supports a few options for each plugin you register, such as a
+custom name or specific git revision. For example, the catppuccin theme is in a
+repository called "nvim", which isn't ideal as we would clone a plugin called
+"nvim", instead of "catppuccin". You can work around this using the `name`
+option like so:
 >lua
-    local Balls = require("balls")
+        local Balls = require("balls")
 
-    Balls:register("https://github.com/nvim-telescope/telescope-fzf-native.nvim", {
-      on_sync = function(plugin)
-        vim.system({ "make" }, { cwd = plugin:path() }, function(result)
-          print("compiled fzf!")
-        end)
-      end,
-    })
+        Balls:register("https://github.com/catppuccin/nvim", {
+          name = "catppuccin",
+        })
 <
+For detailed information about the `register` function and its options, have a
+look at |balls:register()|.
+
+|balls.nvim| will also register itself as a plugin when it loads; to overwrite
+the options for it (e.g. to use ssh instead of https for cloning), you can
+specify a custom `url` and `spec` in |balls:setup()|.
+
                                                             *balls-lazy-loading*
 
-If you use a lot of plugins and want to delay the loading of some of them, you
-can set `lazy = true` when registering a plugin:
+The more plugins you install, the worse your startup time will get, because
+neovim has to load all your plugins on startup. While I recommend you keep your
+total plugin count low, it can still be desirable to improve startup time by not
+loading plugins before you actually need them. If your startup time feels fast,
+feel free to skip the next section!
+
+I mentioned the `opt/` directory earlier already, and that |balls.nvim| will
+install everything into `start/` by default. If you want to lazy-load plugins,
+you can go about it two ways:
+
+1. call |balls:setup()| and set `lazy_by_default = true`
+2. set `lazy = true` for each plugin you want to lazy-load.
+
+For example, if you wanted to load nvim-cmp only when you enter insert mode for
+the first time, you could write the following |autocmd|:
 >lua
-    local Balls = require("balls")
+        local Balls = require("balls")
 
-    Balls:register("https://github.com/hrsh7th/nvim-cmp", {
-      lazy = true,
-    })
+        Balls:register("https://github.com/hrsh7th/nvim-cmp")
 
-    -- ... at some later point
-    vim.cmd.packadd("nvim-cmp")
+        vim.api.nvim_create_autocmd("InsertEnter", {
+          once = true,
+          callback = function()
+            -- Load the plugin
+            vim.cmd.packadd("nvim-cmp")
 
-    -- now nvim-cmp is loaded and can be used
-    require("cmp").setup({
-      -- ...
-    })
-<
-This way the plugin will not be loaded automatically. You can load it manually
-using the |:packadd| command or use |balls.Plugin.load_on()|:
->lua
-    local Balls = require("balls")
-    local nvim_cmp = Balls:register("https://github.com/hrsh7th/nvim-cmp", {
-      lazy = true,
-    })
-
-    -- This will load `nvim-cmp` when the `InsertEnter` event is triggered.
-    nvim_cmp:load_on("InsertEnter", {
-      -- `event` is the autocmd event object
-      -- `plugin` is the same as `nvim_cmp` in this case but provided anyway,
-      -- for convenience
-      callback = function(event, plugin)
-        require("cmp").setup({
-          -- ...
+            -- Usual setup code
+            require("cmp").setup({
+              -- ...
+            })
+          end,
         })
-      end,
-    })
 <
+Because this pattern is so common, the table returned by |balls:register()|
+actually has a method called `load_on`, which is a wrapper around |autocmd|s.
+>lua
+        local Balls = require("balls")
+        local cmp = Balls:register("https://github.com/hrsh7th/nvim-cmp")
+
+        cmp:load_on("InsertEnter", {
+          callback = function()
+            require("cmp").setup({
+              -- ...
+            })
+          end,
+        })
+<
+It takes care of `once = true` and the |:packadd| call for you, and also passes
+you the plugin table as an argument into `callback` in case you want to chain
+functions:
+>lua
+        local Balls = require("balls")
+
+        Balls:register("https://github.com/hrsh7th/nvim-cmp", { lazy = true })
+          :load_on("InsertEnter", {
+            -- `event` is the same table you get in any autocmd callback
+            -- `plugin` is the table returned by `Balls:register()`.
+            callback = function(event, plugin)
+              require("cmp").setup({
+                -- ...
+              })
+            end,
+          })
+<
+It will also only run the callback if the plugin is actually installed, so you
+don't have to worry about using |pcall()| inside of `callback`.
+
 ================================================================================
 COMMANDS                                                        *balls-commands*
 
-*:BallsList*         Opens a split window listing all registered plugins.
+*:BallsList*            This command will open a floating window displaying all
+                      currently installed plugins, as well as some information
+                      about them.
 
-*:BallsInstall*      Makes sure all registered plugins are installed.
+*:BallsInstall*         See |balls:install()|.
 
-*:BallsUpdate*       Makes sure all registered plugins are up to date.
-                   This includes checking out a custom revision if specified.
+*:BallsUpdate*          See |balls:update()|.
 
-*:BallsSync*         Makes sure all registered plugins are installed and up to
-                   date. It also deletes any plugins that are still installed
-                   but not registered.
-
-*:BallsClean*        Deletes all plugins that are installed but not registered.
+*:BallsClean*           See |balls:clean()|.
 
 ================================================================================
-CONFIGURATION                                                     *balls-config*
+LUA API                                                          *balls-lua-api*
 
-|balls.nvim| has relatively few configuration options.
-You can change those options by calling |balls:setup()|:
->lua
-    local Balls = require("balls")
-
-    Balls:setup({
-      -- ...
-    })
-<
-If you are experiencing any issues, it's a good idea to enable debug logging:
->lua
-    local Balls = require("balls")
-
-    Balls:setup({
-      debug = true,
-    })
-<
-Because we uses neovim's builtin |packages| to load plugins, you can customize
-the location where plugins should be installed.
->lua
-    local Balls = require("balls")
-
-    Balls:setup({
-      packpath = "/path/to/plugin/directory",
-    })
-<
-By default this path will be |stdpath|`('config')/pack/balls`, which means it's
-part of your config. If you have a "dotfiles" repository or similar, you can
-track plugin versions using git submodules. If an update breaks something, you
-just revert the commit that updated the offending submodule.
-
-If you want to store your plugins elsewhere, you can do that.
-Example using |stdpath|`('data')`:
->lua
-    local Balls = require("balls")
-    local data_path = vim.fn.stdpath("data")
-
-    Balls:setup({
-      packpath = vim.fs.joinpath(data_path, "site", "pack", "balls")
-    })
-
-Note that the directory you specify must be part of your 'packpath'!
-<
-If you want to enable lazy loading for all plugins by default, you can set the
-`lazy_by_default` option:
->lua
-    local Balls = require("balls")
-
-    Balls:setup({
-      lazy_by_default = true,
-    })
-
-Note that this will require you to call |:packadd| for every plugin to load it
-or use a wrapper like |balls.Plugin.load_on()|.
-<
-Since |balls.nvim| wants to keep itself up to date as well, it registers itself
-as a plugin automatically. If you want / need to change how it installs itself
-(for example to use ssh instead of https for cloning), you can specify a custom
-`balls_spec`:
->lua
-    local Balls = require("balls")
-
-    Balls:setup({
-      balls_spec = {
-        url = "git@github.com:TheBallsUp/balls.nvim.git",
-      },
-    })
-<
-It has the same format as the second argument to |balls:register()| with an
-additional `url` field to override the URL.
-<
-Make sure this happens early! The registration for |balls.nvim| happens in
-`after/plugin` so you should run |balls:setup()| either in your `init.{vim,lua}`
-file, `plugin/`, or in a `lua/` module that's loaded on startup.
-
-================================================================================
-LUA API                                                              *balls-api*
+The following functions are exposed by the `balls` Lua module.
 
 balls:setup({config_override})                                   *balls:setup()*
-    This function can be used to override configuration options for |balls.nvim|.
+        This function is used to configure |balls.nvim|.
 
-    Parameters:
-      • {config_override}  (|balls.ConfigOverride|) (all keys optional)
-                           • debug: (boolean) Print debug logs
-                           • packpath: (string) Custom 'packpath' for storing
-                             plugins
-                           • lazy_by_default: (boolean) Register plugins as lazy
-                             by default
-                           • balls_spec: (|balls.PluginSpec|) Custom plugin spec
-                             for |balls.nvim| itself
-                             Additional keys (optional):
-                             • url: (string) custom URL
+        Parameters:
+          • {config_override} (table) all keys are optional
+            • {debug} (boolean) enable debug logs
+            • {packpath} (string) path to install plugins into; should be part
+              of 'packpath'.
+            • {lazy_by_default} (boolean) set `lazy = true` for all plugins,
+              unless overwritten explicitly.
+            • {auto_install} (boolean) install missing plugins automatically on
+              registration
+            • {auto_update} (boolean) install missing plugins and update
+              existing ones automatically on registration
+            • {url} (string) the URL to use to install |balls.nvim|
+            • {spec} (|balls.PluginSpec|) extra options for installing
+              |balls.nvim|
 
-balls:register({url}, {plugin_spec})                          *balls:register()*
-    This function registers a new plugin. Registered plugins are stored in
-    a global array and used as "the source of truth". Other |balls-api|
-    functions and |balls-commands| will use this list for determining which
-    plugins to install, update, delete, etc.
+        Returns:
+          • {config} (table)
+            • {debug} (boolean) enable debug logs
+            • {packpath} (string) path to install plugins into; should be part
+              of 'packpath'.
+            • {lazy_by_default} (boolean) set `lazy = true` for all plugins,
+              unless overwritten explicitly.
+            • {auto_install} (boolean) install missing plugins automatically on
+              registration
+            • {auto_update} (boolean) install missing plugins and update
+              existing ones automatically on registration
+            • {url} (string) the URL to use to install |balls.nvim|
+            • {spec} (|balls.PluginSpec| | nil) extra options for installing
+              |balls.nvim|
 
-    Parameters:
-      • {url}          (string) URL to pass to `git clone`
-      • {plugin_spec}  (|balls.PluginSpec||nil) Extra options for how to install
-                       the plugin (all of these are optional)
-                       • name: (string) Custom name for the local
-                         repository. This is useful for plugins like
-                         https://github.com/catppuccin/nvim which use "nvim" as
-                         their repository name.
-                       • rev: (string) Custom git revision to checkout
-                       • lazy: (boolean) Do not load this plugin automatically
-                       • on_sync: (fun(self: |balls.Plugin|)) Custom callback
-                         that will run whenever the plugin is installed or
-                         updated
+balls:register({url}, {spec})                                 *balls:register()*
+        This function is used for registering plugins. Registered plugins will
+        be added to a global list accessible via `require("balls").plugin_list`
+        that will be used for all |balls-commands|.
 
-    Return:
-        (|balls.Plugin|) Registered plugin
+        Parameters:
+          • {url} (string) the git URL to pull the plugin from; can be anything
+            that is legal after `git pull`
+          • {spec} (table | nil) any custom options; all keys are optional
+            • {name} (string) a custom name for the local repository
+            • {lazy} (boolean) lazy-load this plugin (see |balls-lazy-loading|)
+            • {rev} (string) a specific git revision
+            • {on_sync} (function) a callback to run whenever the plugin is
+              installed or updated; it has the following parameters:
+              • {self} (|balls.Plugin|) the plugin object
 
-*balls.PluginSpec* passed to |balls:register()|
+        Returns:
+          • {plugin} (|balls.Plugin|) the registered plugin
 
-    Fields:
-      • {name}  (string|nil) Name of the plugin
-      • {url}   (string|nil) URL to pass to `git clone`
-      • {rev}   (string|nil) Custom git revision
-      • {lazy}  (boolean|nil) Whether to put this plugin into `opt/`
-                (default false)
+balls:plugins()                                                *balls:plugins()*
+        This function returns an iterator over the currently registered plugins.
+        Example:
+>lua
+        local Balls = require("balls")
 
-*balls.Plugin* a registered plugin
+        for plugin in Balls:plugins() do
+          -- ...
+        end
+<
+balls:install()                                                *balls:install()*
+        This command will install registered plugins that aren't installed yet.
 
-    Fields:
-      • {name}  (string) Name of the plugin
-      • {url}   (string) URL to pass to `git clone`
-      • {rev}   (string|nil) Custom git revision
-      • {lazy}  (boolean) Whether to put this plugin into `opt/`
+balls:update()                                                  *balls:update()*
+        This command will update any currently installed plugins.
+        That includes any changes to options like `lazy` or `rev`.
 
-balls.Plugin:path({lazy_override})                         *balls.Plugin.path()*
-    Returns the installation path of a plugin.
+balls:clean()                                                    *balls:clean()*
+        This command will remove any plugins that are still installed, but not
+        registered anymore.
 
-    Parameters:
-      • {lazy_override}  (boolean|nil) Override `lazy` just for this call
+PluginSpec                                                    *balls.PluginSpec*
+        Options for customizing a plugin's installation.
+          • {name} (string) a custom name for the local repository
+          • {lazy} (boolean) lazy-load this plugin (see |balls-lazy-loading|)
+          • {rev} (string) a specific git revision
+          • {on_sync} (function) a callback to run whenever the plugin is
+            installed or updated; it has the following parameters:
+            • {self} (|balls.Plugin|) the plugin object
 
-    Return:
-        (string) Path to where the plugin is installed
+Plugin                                                            *balls.Plugin*
+        A registered plugin.
+          • {name} (string) the plugin's name
+          • {lazy} (boolean) whether this plugin should be lazy-loaded
+            (see |balls-lazy-loading|)
+          • {url} (string) the plugin's git URL
+          • {rev} (string | nil) a specific git revision to use
 
-balls.Plugin:load_on({events}, {opts})                  *balls.Plugin.load_on()*
-    Will setup an |autocmd| to load a plugin on specific event(s).
+The following methods are defined and expected to be used by users:
 
-    Parameters:
-      • {events}  (string|string[]) Event(s) to load the plugin on
-      • {opts}    (table|nil) See |nvim_create_autocmd()|
-                  Additional / modified keys (optional):
-                  • callback (fun(event: table, plugin: |balls.Plugin|))
-                    Runs after loading the plugin.
+Plugin:path()                                              *balls.Plugin:path()*
+        The installation path of this plugin. This can be useful if a custom
+        build step is required, like shelling out to `make` in the plugin's
+        directory.
 
-    Return:
-        (integer) |autocmd| ID
+Plugin:installed()                                    *balls.Plugin:installed()*
+        Whether this plugin is currently installed.
 
-balls.Plugin:installed()                              *balls.Plugin.installed()*
-    Tells you whether this plugin is installed.
+Plugin:load()                                              *balls.Plugin:load()*
+        Loads this plugin, if it isn't already loaded. This is a convenience
+        wrapper around |:packadd|.
 
-    Return:
-        (boolean)
+Plugin:load_on({events}, {options})                     *balls.Plugin:load_on()*
+        Setup an |autocmd| that will load this plugin. See |balls-lazy-loading|
+        for an example usage.
 
-balls.Plugin:install()                                  *balls.Plugin.install()*
-    Installs this plugin.
+        Parameters:
+          • {events} (string | string[]) event name(s) that should load this
+            plugin when fired
+          • {options} (|balls.LoadOptions| | nil) options to pass to the created
+            |autocmd|
 
-balls.Plugin:update()                                    *balls.Plugin.update()*
-    Updates this plugin.
-
-balls.Plugin:sync()                                        *balls.Plugin.sync()*
-    Makes sure this plugin is installed and up to date.
+*balls.LoadOptions* - options to pass to |balls.Plugin:load_on()|
+  • {callback} (function | nil) callback to run when one of the events is fired;
+    it has the following parameters:
+    • {event} (table) see |nvim_create_autocmd()|
+    • {plugin} (|balls.Plugin|) the plugin that was just loaded
+  • {...} see |nvim_create_autocmd()|
 
 ================================================================================
 
