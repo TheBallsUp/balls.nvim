@@ -1,5 +1,3 @@
-local config = require("balls.config")
-
 local Balls = {
 	---@type balls.Plugin[]
 	plugin_list = {},
@@ -14,16 +12,16 @@ function Balls:setup(config_override)
 	})
 
 	if not config_override then
-		return config
+		return require("balls.config")
 	end
 
 	for k, v in pairs(config_override) do
-		if config[k] ~= nil then
-			config[k] = v
+		if require("balls.config")[k] ~= nil then
+			require("balls.config")[k] = v
 		end
 	end
 
-	return config
+	return require("balls.config")
 end
 
 --- Registers a new plugin.
@@ -56,9 +54,9 @@ function Balls:register(url, spec)
 
 	require("balls.util").debug("Registered plugin `%s`.", plugin.name)
 
-	if config.auto_update then
+	if require("balls.config").auto_update then
 		plugin:update(true)
-	elseif config.auto_install then
+	elseif require("balls.config").auto_install then
 		plugin:update(false)
 	end
 
@@ -99,7 +97,7 @@ function Balls:clean()
 		cache[plugin:path()] = true
 	end
 
-	local packpath = config.packpath
+	local packpath = require("balls.config").packpath
 
 	self:_clean_dir(vim.fs.joinpath(packpath, "opt"), cache)
 	self:_clean_dir(vim.fs.joinpath(packpath, "start"), cache)
@@ -127,8 +125,5 @@ function Balls:_clean_dir(dir, cache)
 
 	U.debug("Cleaned `%s`.", dir)
 end
-
-local plugin = Balls:register(config.url, config.spec)
-vim.cmd.helptags(plugin:path())
 
 return Balls
