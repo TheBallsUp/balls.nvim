@@ -14,7 +14,7 @@ your config.
 
 The basic lifecycle goes like this:
 
-1. You |balls.register()| a plugin
+1. You |balls:register()| a plugin
 2. The plugin gets added to a global list of plugins
 3. You run |balls-commands| which will then operate on that list
 
@@ -31,7 +31,7 @@ would normally:
 
     telescope.setup({})
 <
-Keep in mind that a call to |balls.register()| is not going to install the
+Keep in mind that a call to |balls:register()| is not going to install the
 plugin. You still have to run |:BallsInstall| or call |balls.Plugin.install()|.
 This is why I recommend you use |pcall()| to guard your config against missing
 plugins:
@@ -51,7 +51,7 @@ a config for a new plugin you haven't yet installed.
                                                                  *balls-on-sync*
 
 If you want to run a custom function whenever a plugin is installed or updated,
-you can pass the `on_sync` parameter to |balls.register()|. An example use case
+you can pass the `on_sync` parameter to |balls:register()|. An example use case
 for this is https://github.com/nvim-telescope/telescope-fzf-native.nvim which
 requires you to run a build step for compiling a shared C library.
 >lua
@@ -124,7 +124,7 @@ COMMANDS                                                        *balls-commands*
 CONFIGURATION                                                     *balls-config*
 
 |balls.nvim| has relatively few configuration options.
-You can change those options by calling |balls.setup()|:
+You can change those options by calling |balls:setup()|:
 >lua
     local Balls = require("balls")
 
@@ -191,17 +191,17 @@ as a plugin automatically. If you want / need to change how it installs itself
       },
     })
 <
-It has the same format as the second argument to |balls.register()| with an
+It has the same format as the second argument to |balls:register()| with an
 additional `url` field to override the URL.
 <
 Make sure this happens early! The registration for |balls.nvim| happens in
-`after/plugin` so you should run |balls.setup()| either in your `init.{vim,lua}`
+`after/plugin` so you should run |balls:setup()| either in your `init.{vim,lua}`
 file, `plugin/`, or in a `lua/` module that's loaded on startup.
 
 ================================================================================
 LUA API                                                              *balls-api*
 
-balls.setup({config_override})                                   *balls.setup()*
+balls:setup({config_override})                                   *balls:setup()*
     This function can be used to override configuration options for |balls.nvim|.
 
     Parameters:
@@ -216,7 +216,7 @@ balls.setup({config_override})                                   *balls.setup()*
                              Additional keys (optional):
                              • url: (string) custom URL
 
-balls.register({url}, {plugin_spec})                          *balls.register()*
+balls:register({url}, {plugin_spec})                          *balls:register()*
     This function registers a new plugin. Registered plugins are stored in
     a global array and used as "the source of truth". Other |balls-api|
     functions and |balls-commands| will use this list for determining which
@@ -239,7 +239,7 @@ balls.register({url}, {plugin_spec})                          *balls.register()*
     Return:
         (|balls.Plugin|) Registered plugin
 
-*balls.PluginSpec* passed to |balls.register()|
+*balls.PluginSpec* passed to |balls:register()|
 
     Fields:
       • {name}  (string|nil) Name of the plugin
